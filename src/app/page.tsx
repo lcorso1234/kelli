@@ -36,8 +36,11 @@ export default function Home() {
     const message = encodeURIComponent(
       "You are added to the Confidence Network. Can't wait to connect."
     );
+    const phoneNumber = CONTACT.phone.replace(/\D/g, ""); // Remove non-digits
     const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const smsLink = isiOS ? `sms:&body=${message}` : `sms:?body=${message}`;
+    const smsLink = isiOS 
+      ? `sms:${phoneNumber}&body=${message}` 
+      : `sms:${phoneNumber}?body=${message}`;
     window.location.href = smsLink;
   };
 
