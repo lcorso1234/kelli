@@ -31,17 +31,21 @@ export default function Home() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-
-    const message = encodeURIComponent(
-      "You are added to the Confidence Network. Can't wait to connect."
-    );
-    const phoneNumber = CONTACT.phone.replace(/\D/g, ""); // Remove non-digits
-    const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const smsLink = isiOS 
-      ? `sms:${phoneNumber}&body=${message}` 
-      : `sms:${phoneNumber}?body=${message}`;
-    window.location.href = smsLink;
+    
+    // Wait for contact to be saved, then open messaging app
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      
+      const message = encodeURIComponent(
+        "You are added to the Confidence Network. Can't wait to connect."
+      );
+      const phoneNumber = CONTACT.phone.replace(/\D/g, ""); // Remove non-digits
+      const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const smsLink = isiOS 
+        ? `sms:${phoneNumber}&body=${message}` 
+        : `sms:${phoneNumber}?body=${message}`;
+      window.location.href = smsLink;
+    }, 500);
   };
 
   return (
