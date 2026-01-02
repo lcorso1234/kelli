@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 const CONTACT = {
   title: "Scientist",
   firstName: "Kelli",
@@ -10,6 +12,9 @@ const CONTACT = {
 };
 
 export default function Home() {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [smsLink, setSmsLink] = useState("");
+
   const handleSaveContact = () => {
     const vcard = [
       "BEGIN:VCARD",
@@ -31,22 +36,38 @@ export default function Home() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    // Wait for contact to be saved, then open messaging app
+
+    // Give the browser a moment to start the download then show confirmation
     setTimeout(() => {
       URL.revokeObjectURL(url);
-      
+
       const message = encodeURIComponent(
         "You are added to the Confidence Network. Can't wait to connect."
       );
       const phoneNumber = CONTACT.phone.replace(/\D/g, ""); // Remove non-digits
       const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const smsLink = isiOS 
-        ? `sms:${phoneNumber}&body=${message}` 
+      const linkForSms = isiOS
+        ? `sms:${phoneNumber}&body=${message}`
         : `sms:${phoneNumber}?body=${message}`;
-      window.location.href = smsLink;
+
+      // Store the sms link and open a confirmation modal. Only send if user confirms.
+      setSmsLink(linkForSms);
+      setShowConfirm(true);
     }, 500);
   };
+
+  const sendSms = () => {
+    if (smsLink) {
+      // Close modal first to keep UI tidy, then navigate to SMS
+      setShowConfirm(false);
+      window.location.href = smsLink;
+    }
+  };
+
+  const cancelSend = () => {
+    setShowConfirm(false);
+  };
+
 
   return (
     <div className="noise-surface relative flex min-h-screen items-center justify-center px-4 py-10 text-slate-100">
@@ -96,6 +117,22 @@ export default function Home() {
             </button>
           </div>
         </main>
+
+        {showConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60" />
+            <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-700/60 bg-[#0f141b] p-6 shadow-lg">
+              <h3 className="mb-2 text-lg font-semibold text-white">Send automated message?</h3>
+              <p className="mb-4 text-sm text-slate-300">
+                Your contact download was started. Do you want to send the automated text message now?
+              </p>
+              <div className="flex justify-end gap-3">
+                <button onClick={cancelSend} className="rounded-md px-3 py-2 text-sm bg-slate-700 text-slate-100">Cancel</button>
+                <button onClick={sendSms} className="rounded-md px-4 py-2 text-sm bg-[#7aff00] text-black font-semibold">Send message</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <footer className="mt-4 text-center text-sm text-slate-400">
           <div>Built in America, on earth.</div>
